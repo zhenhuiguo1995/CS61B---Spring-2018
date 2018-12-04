@@ -19,13 +19,12 @@ public class MemoryGame {
             "Too easy for you!", "Wow, so impressive!"};
 
     public static void main(String[] args) {
-        /*if (args.length < 1) {
+        if (args.length < 1) {
             System.out.println("Please enter a seed");
             return;
-        }*/
+        }
 
-        //long seed = Long.parseLong(args[0]);
-        long seed = 1234576;
+        long seed = Long.parseLong(args[0]);
         MemoryGame game = new MemoryGame(40, 40, seed);
         game.startGame();
     }
@@ -60,7 +59,7 @@ public class MemoryGame {
 
             playerTurn = true;
             String userInput = solicitNCharsInput(round);
-            
+
             if (!userInput.equals(roundString)) {
                 gameOver = true;
                 drawFrame("Game Over! Final level: " + round);
