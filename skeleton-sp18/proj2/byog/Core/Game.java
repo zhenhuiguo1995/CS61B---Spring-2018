@@ -3,6 +3,7 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+import com.sun.org.apache.xpath.internal.functions.FuncFalse;
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
@@ -46,20 +47,24 @@ public class Game {
         if (length > 0 ){
             String start = input.substring(0, 1);
             if (start.equals("l")) {
-                return loadGame();
+                loadGame(finalWorldFrame);
+                parseAndExecute(input, finalWorldFrame, "l");
             } else if (start.equals("n") && length >= 3) {
-                parseAndExecute(input, finalWorldFrame);
+                parseAndExecute(input, finalWorldFrame, "n");
+                //Question???
                 return finalWorldFrame;
             }
         }
         return finalWorldFrame;
     }
 
-    public void parseAndExecute(String input, TETile[][] finalWorldFrame) {
-        int seed = getSeedFromInput(input);
+    public void parseAndExecute(String input, TETile[][] finalWorldFrame, String mode) {
         int length = input.length();
+        if (mode.equals("n")) {
+            int seed = getSeedFromInput(input);
+            generateRandomWorld(seed, finalWorldFrame);
+        }
         String commands = getCommandsFromInput(input);
-        generateRandomWorld(seed, finalWorldFrame);
         executeCommands(commands);
         String end = input.substring(length - 2, length);
         // generate the world
@@ -89,18 +94,18 @@ public class Game {
         return input.substring(start, input.length());
     }
 
-    public TETile[][] loadGame() {
+    public void loadGame(TETile[][] finalWorlFrame) {
         File file = new File("save.txt");
         if (! file.exists()) {
-            return null;
+            return;
         } else {
             try {
                 FileInputStream f = new FileInputStream(file);
                 ObjectInputStream o = new ObjectInputStream(f);
-                return  (TETile[][]) o.readObject();
+                finalWorlFrame = (TETile[][]) o.readObject();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-                return null;
+                return;
             }
         }
     }
@@ -136,6 +141,8 @@ public class Game {
             System.exit(0);
         }
     }
+
+
 
     public void executeCommands(String commands) {
 
