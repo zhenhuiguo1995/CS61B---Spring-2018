@@ -2,6 +2,10 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
+import byog.TileEngine.Tileset;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
+import java.io.*;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -11,6 +15,7 @@ public class Game {
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
+     * Not implemented until the second phrase
      */
     public void playWithKeyboard() {
     }
@@ -32,7 +37,108 @@ public class Game {
         // and return a 2D tile representation of the world that would have been
         // drawn if the same inputs had been given to playWithKeyboard().
 
-        TETile[][] finalWorldFrame = null;
+        // if input is "l", load the game
+        // if input is "N....S", create a new TETile array with the see
+        // when use this method, the input can't be s
+        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
+        input = input.toLowerCase();
+        int length = input.length();
+        if (length > 0 ){
+            String start = input.substring(0, 1);
+            if (start.equals("l")) {
+                return loadGame();
+            } else if (start.equals("n") && length >= 3) {
+                parseAndExecute(input, finalWorldFrame);
+                return finalWorldFrame;
+            }
+        }
         return finalWorldFrame;
     }
+
+    public void parseAndExecute(String input, TETile[][] finalWorldFrame) {
+        int seed = getSeedFromInput(input);
+        int length = input.length();
+        String commands = getCommandsFromInput(input);
+        generateRandomWorld(seed, finalWorldFrame);
+        executeCommands(commands);
+        String end = input.substring(length - 2, length);
+        // generate the world
+        if (end.equals(":q")) {
+            saveGame(finalWorldFrame);
+        }
+    }
+
+    public int getSeedFromInput(String input) {
+        int end = 1;
+        while ( Character.isDigit(input.charAt(end))) {
+            end += 1;
+        }
+        return Integer.parseInt(input.substring(1, end));
+    }
+
+    public String getCommandsFromInput(String input) {
+        //start is the staring index of the first command
+        int start = 1;
+        while ( Character.isDigit(input.charAt(start))) {
+            start += 1;
+        }
+        String end = input.substring(input.length() - 2, input.length());
+        if (end.equals(":q")) {
+            return input.substring(start, input.length() - 2);
+        }
+        return input.substring(start, input.length());
+    }
+
+    public TETile[][] loadGame() {
+        File file = new File("save.txt");
+        if (! file.exists()) {
+            return null;
+        } else {
+            try {
+                FileInputStream f = new FileInputStream(file);
+                ObjectInputStream o = new ObjectInputStream(f);
+                return  (TETile[][]) o.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    public void generateRandomWorld(int seed, TETile[][] finalWorldFrame) {
+        //takes a seed and a TETile[][], fills the TETile[][] with Tiles
+        for (int i = 0; i < WIDTH; i ++) {
+            for (int j = 0; j < HEIGHT; j ++) {
+                //initialize and set every tile to be nothing
+                finalWorldFrame[i][j] = Tileset.NOTHING;
+            }
+        }
+    }
+
+
+    public void saveGame(TETile[][] finalWorldFrame) {
+        File file = new File("save.txt");
+        if (! file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            FileOutputStream f = new FileOutputStream(file);
+            ObjectOutputStream o = new ObjectOutputStream(f);
+            o.writeObject(finalWorldFrame);
+            o.close();
+            f.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
+    public void executeCommands(String commands) {
+
+    }
+
 }
